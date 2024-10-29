@@ -1,0 +1,62 @@
+using UnityEngine;
+
+public class SimpleCameraController : MonoBehaviour
+{
+    public Transform target;          // The target the camera will follow
+    public float rotationSpeed = 5f;  // Speed of the camera rotation
+    public float distance = 10f;      // Distance from the target
+    public float maxVerticalAngle = 80f;  // Maximum vertical angle
+    public float minVerticalAngle = -30f; // Minimum vertical angle
+    public Vector2 rotationOffset = new Vector2(0, 0);  // Rotation offset for starting camera angle
+    public bool invertX = false;      // Invert X-axis rotation
+    public bool invertY = false;      // Invert Y-axis rotation
+
+    private float currentX = 0f;
+    private float currentY = 0f;
+
+    void Start()
+    {
+        if (target == null)
+        {
+            Debug.LogError("Camera target is not assigned!");
+            return;
+        }
+
+        // Initialize camera rotation based on offset
+        currentX = target.eulerAngles.y + rotationOffset.x;
+        currentY = target.eulerAngles.x + rotationOffset.y;
+    }
+
+    void LateUpdate()
+    {
+        if (target == null)
+            return;
+
+        // Input for camera rotation
+        float inputX = Input.GetAxis("Mouse X") * rotationSpeed;
+        float inputY = Input.GetAxis("Mouse Y") * rotationSpeed;
+
+        // Apply inversion
+        if (invertX)
+            inputX = -inputX;
+        if (invertY)
+            inputY = -inputY;
+
+        // Update the current rotation angles
+        currentX += inputX;
+        currentY -= inputY;
+
+        // Clamp vertical angle to prevent camera flipping
+        currentY = Mathf.Clamp(currentY, minVerticalAngle, maxVerticalAngle);
+
+        // Calculate camera rotation and direction
+        Quaternion rotation = Quaternion.Euler(currentY, currentX, 0);
+        Vector3 direction = rotation * Vector3.forward * distance;
+
+        // Position the camera relative to the target
+        transform.position = target.position - direction;
+
+        // Ensure the camera is always looking at the target
+        transform.LookAt(target.position);
+    }
+}

@@ -1,0 +1,164 @@
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    private Animator animator;
+    private Rigidbody rb;
+
+    public float moveSpeed = 5f; // Speed of the player
+    public float turnSpeed = 10f; // Speed of player turning
+    public Transform cameraTransform; // Reference to the camera transform
+    public float rotationSensitivity = 2f; // Sensitivity of camera rotation
+
+    private bool isExercising = false; // Flag to check if the player is exercising
+    private bool isSitting = false; // Flag to check if the player is sitting
+    private bool isSleeping = true; // New flag to check if the player is sleeping
+    private float cameraYaw = 0f; // Stores camera yaw rotation
+
+    void Start()
+    {
+        // Get the Animator and Rigidbody components attached to the player
+        animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
+
+        // Start in a sleeping state
+        animator.SetBool("isSleeping", true);
+    }
+
+    void Update()
+    {
+        HandleWakeUp(); // Handle waking up from the sleeping state
+
+        if (!isSleeping) // Only handle other inputs if not sleeping
+        {
+            HandleModeSwitch(); // Switch between locomotion and exercise modes
+
+            if (!isExercising && !isSitting) // Only allow movement if not exercising and not sitting
+            {
+                HandleMovement(); // Handle movement when not exercising or sitting
+            }
+
+            HandleExerciseInput(); // Handle exercise input
+            HandleSittingInput();  // Handle sitting input
+            HandleCameraRotation(); // Handle camera rotation
+        }
+    }
+
+    // Method to handle waking up from sleeping state
+    void HandleWakeUp()
+    {
+        // Press 'Y' to wake up and switch to normal mode
+        if (isSleeping && Input.GetKeyDown(KeyCode.Y))
+        {
+            isSleeping = false; // Player is no longer sleeping
+            animator.SetBool("isSleeping", false); // Stop sleeping animation
+            animator.SetFloat("MoveAmount", 0); // Reset MoveAmount to start idle/locomotion animations
+        }
+    }
+
+    // Method to handle player movement
+    void HandleMovement()
+    {
+        float moveHorizontal = Input.GetAxis("Horizontal");
+        float moveVertical = Input.GetAxis("Vertical");
+
+        // Calculate movement direction
+        Vector3 movement = new Vector3(moveHorizontal, 0, moveVertical).normalized;
+
+        // Determine MoveAmount based on input
+        float moveAmount = Mathf.Clamp01(movement.magnitude); // Ensure value is between 0 and 1
+        animator.SetFloat("MoveAmount", moveAmount); // Set MoveAmount parameter in the Animator
+
+        // Move the player
+        if (moveAmount > 0.1f) // Only move if there's significant input
+        {
+            // Calculate target position
+            Vector3 targetPosition = transform.position + movement * moveSpeed * Time.deltaTime;
+            rb.MovePosition(targetPosition);
+
+            // Smoothly rotate towards movement direction
+            Quaternion targetRotation = Quaternion.LookRotation(movement);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
+        }
+        else
+        {
+            // If not moving, reset MoveAmount to zero
+            animator.SetFloat("MoveAmount", 0);
+        }
+    }
+
+    // Handle switching between locomotion and exercise modes
+    void HandleModeSwitch()
+    {
+        // Press 'E' to toggle between Locomotion and Exercise mode
+        if (Input.GetKeyDown(KeyCode.E) && !isSitting) // Only switch modes if not sitting
+        {
+            isExercising = !isExercising; // Toggle the exercise flag
+            animator.SetFloat("ExerciseType", -1); // Reset exercise type to idle when switching modes
+            animator.SetFloat("MoveAmount", 0); // Reset MoveAmount to 0 when switching modes
+        }
+    }
+
+    // Handle input for specific exercise animations
+    void HandleExerciseInput()
+    {
+        if (isExercising && !isSitting) // Only check exercise input when in exercise mode and not sitting
+        {
+            // Press 'P' for Push-Up (ExerciseType = 0)
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                animator.SetFloat("ExerciseType", 0); // Set the blend tree to Push-Up
+                animator.SetFloat("MoveAmount", 0); // Reset MoveAmount to ensure idle during exercise
+            }
+
+            // Press 'T' for Air Squat (ExerciseType = 1)
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                animator.SetFloat("ExerciseType", 1); // Set the blend tree to Air Squat
+                animator.SetFloat("MoveAmount", 0); // Reset MoveAmount to ensure idle during exercise
+            }
+
+            // Press 'C' for Bicycle Crunch (ExerciseType = 2)
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                animator.SetFloat("ExerciseType", 2); // Set the blend tree to Bicycle Crunch
+                animator.SetFloat("MoveAmount", 0); // Reset MoveAmount to ensure idle during exercise
+            }
+
+            // Optionally, press 'X' to stop exercising and return to idle
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                animator.SetFloat("ExerciseType", -1); // Set to idle or return state
+            }
+        }
+    }
+
+    // Handle input for sitting
+    void HandleSittingInput()
+    {
+        if (!isExercising) // Only allow sitting when not exercising
+        {
+            // Press 'Q' to toggle sitting
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                isSitting = !isSitting; // Toggle sitting flag
+                animator.SetBool("isSitting", isSitting); // Set the Animator parameter
+                animator.SetFloat("MoveAmount", 0); // Ensure the player doesn't move while sitting
+            }
+        }
+    }
+
+    // Handle camera rotation based on mouse input
+    void HandleCameraRotation()
+    {
+        // Get mouse input
+        float mouseX = Input.GetAxis("Mouse X") * rotationSensitivity;
+
+        // Update yaw rotation
+        cameraYaw += mouseX;
+
+        // Rotate the camera around the player
+        cameraTransform.position = transform.position - cameraTransform.forward * 5f + Vector3.up * 2f; // Adjust distance and height as desired
+        cameraTransform.rotation = Quaternion.Euler(0, cameraYaw, 0);
+    }
+}

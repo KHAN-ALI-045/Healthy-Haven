@@ -1,0 +1,40 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class HealthManager : MonoBehaviour
+{
+    public Slider healthBar; // Drag the HealthBar UI here in the inspector
+    private float currentHealth = 0f;
+    private float maxHealth = 100f;
+
+    void Start()
+    {
+        // Initialize health bar
+        healthBar.maxValue = maxHealth;
+        healthBar.value = currentHealth;
+    }
+
+    void Update()
+    {
+        // Check for space bar press
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            IncreaseHealth(20f); // Increase health by 20%
+        }
+    }
+
+    // Function to increase health
+    void IncreaseHealth(float amount)
+    {
+        currentHealth += amount;
+
+        // Ensure health doesn't go over 100%
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+
+        // Update the health bar
+        healthBar.value = currentHealth;
+    }
+}

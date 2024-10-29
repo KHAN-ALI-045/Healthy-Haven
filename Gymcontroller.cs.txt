@@ -1,0 +1,74 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class GymController : MonoBehaviour
+{
+    public Text instructionsText; // Reference to the UI Text for displaying instructions
+    private bool isInGymMode = false; // Track whether the player is in gym mode
+
+    void Update()
+    {
+        // Check for player input to enter/exit gym mode
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            ToggleGymMode();
+        }
+
+        // If the player is in gym mode, check for exercise input
+        if (isInGymMode)
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                PerformPushUps();
+            }
+            else if (Input.GetKeyDown(KeyCode.C))
+            {
+                PerformCrunches();
+            }
+            else if (Input.GetKeyDown(KeyCode.T))
+            {
+                PerformSquats();
+            }
+        }
+    }
+
+    void ToggleGymMode()
+    {
+        isInGymMode = !isInGymMode; // Toggle gym mode state
+        UpdateInstructions();
+    }
+
+    void UpdateInstructions()
+    {
+        if (isInGymMode)
+        {
+            instructionsText.text = "Gym Mode Active\n" +
+                                     "Press C for Crunches\n" +
+                                     "Press P for Push-Ups\n" +
+                                     "Press T for Squats\n" +
+                                     "Press E to Exit Gym Mode";
+        }
+        else
+        {
+            instructionsText.text = "Press E to Enter Gym Mode";
+        }
+    }
+
+    void PerformPushUps()
+    {
+        // Add your push-up logic here
+        Debug.Log("Doing Push-Ups");
+    }
+
+    void PerformCrunches()
+    {
+        // Add your crunch logic here
+        Debug.Log("Doing Crunches");
+    }
+
+    void PerformSquats()
+    {
+        // Add your squat logic here
+        Debug.Log("Doing Squats");
+    }
+}

@@ -1,0 +1,49 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class HealthBarController : MonoBehaviour
+{
+    public Image healthFillImage; // Drag your HealthBar here in Unity
+
+    private float maxHealth = 100f;
+    private float currentHealth;
+
+    void Start()
+    {
+        currentHealth = maxHealth;
+        UpdateHealthBar();
+    }
+
+    void Update()
+    {
+        // Check if the Spacebar is pressed to increase health by 20%
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            IncreaseHealthByPercentage(20f);
+        }
+    }
+
+    // Method to decrease health
+    public void TakeDamage(float amount)
+    {
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);  // Keep health within 0 to max
+        UpdateHealthBar();
+    }
+
+    // Method to increase health by a percentage
+    void IncreaseHealthByPercentage(float percentage)
+    {
+        // Calculate the health increase based on the percentage
+        float healthIncrease = maxHealth * (percentage / 100);
+        currentHealth += healthIncrease;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);  // Keep health within 0 to max
+        UpdateHealthBar();
+    }
+
+    // Method to update the health bar UI
+    void UpdateHealthBar()
+    {
+        healthFillImage.fillAmount = currentHealth / maxHealth;
+    }
+}
